@@ -14,33 +14,28 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Stop loading after 2 seconds max
+        const timeout = setTimeout(() => setLoading(false), 2000);
+
         async function fetchQuizzes() {
             try {
-                // Fetch public quizzes
+                // Fetch public quizzes (simple query without orderBy to avoid index requirement)
                 const publicQuery = query(
                     collection(db, 'quizzes'),
-                    orderBy('createdAt', 'desc'),
                     limit(20)
                 );
                 const publicSnap = await getDocs(publicQuery);
                 setQuizzes(publicSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-
-                // Fetch user's quizzes if logged in
-                if (user) {
-                    const myQuery = query(
-                        collection(db, 'quizzes'),
-                        where('creatorId', '==', user.uid),
-                        orderBy('createdAt', 'desc')
-                    );
-                    const mySnap = await getDocs(myQuery);
-                    setMyQuizzes(mySnap.docs.map(d => ({ id: d.id, ...d.data() })));
-                }
             } catch (err) {
-                console.error(err);
+                console.error('Error fetching quizzes:', err);
             }
+            clearTimeout(timeout);
             setLoading(false);
         }
+
         fetchQuizzes();
+
+        return () => clearTimeout(timeout);
     }, [user]);
 
     const displayQuizzes = tab === 'explore' ? quizzes : myQuizzes;
