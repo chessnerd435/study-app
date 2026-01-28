@@ -52,13 +52,23 @@ export function AuthProvider({ children }) {
     }
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            setUser(firebaseUser);
-            await fetchUserData(firebaseUser);
+        // Set a timeout so we don't show loading forever
+        const timeout = setTimeout(() => {
             setLoading(false);
+        }, 1500);
+
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            clearTimeout(timeout);
+            setUser(firebaseUser);
+            setLoading(false);
+            // Fetch user data in background (don't block UI)
+            fetchUserData(firebaseUser);
         });
 
-        return unsubscribe;
+        return () => {
+            clearTimeout(timeout);
+            unsubscribe();
+        };
     }, []);
 
     const loginWithGoogle = async () => {
