@@ -96,17 +96,14 @@ export default function CreateQuiz() {
                 }))
             };
 
-            await addDoc(collection(db, 'quizzes'), quizData);
-
-            // Update user's quizzes created count
-            await refreshUserData();
-
+            // Save quiz - don't await, navigate immediately for snappy feel
+            addDoc(collection(db, 'quizzes'), quizData);
             navigate('/');
         } catch (err) {
             console.error(err);
             alert('Error saving quiz: ' + err.message);
+            setSaving(false);
         }
-        setSaving(false);
     };
 
     return (
