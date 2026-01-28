@@ -96,8 +96,8 @@ export default function CreateQuiz() {
                 }))
             };
 
-            // Save quiz - don't await, navigate immediately for snappy feel
-            addDoc(collection(db, 'quizzes'), quizData);
+            // Save quiz and wait for it to complete
+            await addDoc(collection(db, 'quizzes'), quizData);
             navigate('/');
         } catch (err) {
             console.error(err);
